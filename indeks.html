@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BALLOON POP – Pecahkan Balon Pintar</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2b2a55;--sky1:#5ec8ff;--sky2:#c9f0ff;--sun:#ffd23f;--pink:#ff5d8f;--grn:#2fc47a}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Baloo 2','Comic Sans MS',system-ui,sans-serif;color:var(--ink);user-select:none}
+body{background:linear-gradient(var(--sky1),var(--sky2) 75%,#b8f0a8 75%,#8fdc7a)}
+.cloud{position:fixed;background:#fff;border-radius:60px;opacity:.9;animation:drift linear infinite;z-index:0}
+.cloud:before,.cloud:after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud:before{width:55%;height:140%;left:12%;top:-60%}.cloud:after{width:40%;height:110%;right:14%;top:-40%}
+@keyframes drift{from{transform:translateX(-30vw)}to{transform:translateX(130vw)}}
+#nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(255,255,255,.92);display:none;align-items:center;gap:12px;padding:0 14px;z-index:20;box-shadow:0 3px 0 rgba(43,42,85,.12);font-weight:700}
+#nav .sp{flex:1}.chip{background:var(--sun);padding:2px 14px;border-radius:20px;font-size:1.05rem}
+#nav button{font:inherit;border:0;background:#e8e6ff;border-radius:20px;padding:2px 12px;cursor:pointer;color:var(--ink)}
+#bar{position:fixed;top:56px;left:0;right:0;height:10px;background:rgba(255,255,255,.5);z-index:20;display:none}
+#bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--sun));border-radius:0 8px 8px 0;transition:width .5s}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px;z-index:10}
+.screen h1{font-size:clamp(2.2rem,8vw,4.4rem);line-height:1;font-weight:800;color:#fff;text-shadow:0 5px 0 var(--ink),0 8px 14px rgba(0,0,0,.2);-webkit-text-stroke:2px var(--ink)}
+.screen h2{font-size:1.4rem}
+.card{background:#fff;border-radius:28px;padding:22px 26px;box-shadow:0 8px 0 rgba(43,42,85,.18);max-width:480px;width:100%}
+input{font:inherit;font-size:1.3rem;text-align:center;border:3px solid var(--ink);border-radius:18px;padding:8px 14px;width:100%;margin:10px 0;color:var(--ink)}
+.btn{font:inherit;font-size:1.4rem;font-weight:800;color:#fff;background:var(--pink);border:0;border-radius:40px;padding:8px 34px;cursor:pointer;box-shadow:0 6px 0 #b8325f;transition:transform .08s}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 #b8325f}.btn.g{background:var(--grn);box-shadow:0 6px 0 #1b8a53}
+.btn:focus-visible,input:focus-visible,#nav button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+small{display:block;font-size:.9rem;opacity:.8;margin-top:6px}
+#game{display:none}
+#q{position:fixed;top:86px;left:50%;transform:translateX(-50%);width:min(92vw,720px);background:#fff;border-radius:26px;padding:10px 20px;text-align:center;z-index:15;box-shadow:0 6px 0 rgba(43,42,85,.18)}
+#q .tag{display:inline-block;font-size:.85rem;font-weight:800;color:#fff;border-radius:14px;padding:0 12px}
+#q p{font-size:clamp(1.15rem,3.6vw,1.8rem);font-weight:700;line-height:1.2}
+#tm{height:8px;background:#e8e6ff;border-radius:6px;margin-top:6px;overflow:hidden}#tm i{display:block;height:100%;width:100%;background:var(--grn)}
+#stage{position:fixed;inset:0;z-index:5;overflow:hidden}
+.b{position:absolute;width:var(--s);height:calc(var(--s)*1.18);border-radius:50% 50% 48% 48%/55% 55% 45% 45%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:calc(var(--s)*.3);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);cursor:pointer;
+background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95) 0 7%,rgba(255,255,255,.25) 14%,transparent 26%),radial-gradient(circle at 40% 35%,var(--c1),var(--c2) 70%,var(--c3));box-shadow:inset -10px -14px 22px rgba(0,0,0,.22),0 10px 18px rgba(0,0,0,.15);text-align:center;line-height:1;padding:0 8%}
+.b:after{content:"";position:absolute;bottom:-9px;left:50%;margin-left:-8px;border:8px solid transparent;border-bottom-color:var(--c3);border-top:0}
+.b span{position:relative;top:-4px}
+.b.hover{filter:brightness(1.15);outline:5px dashed #fff}
+.b.bad{animation:shake .5s;background:radial-gradient(circle at 40% 35%,#aaa,#777);pointer-events:none;opacity:.75}
+@keyframes shake{20%,60%{transform:translateX(-12px) rotate(-6deg)}40%,80%{transform:translateX(12px) rotate(6deg)}}
+.pt{position:absolute;pointer-events:none;border-radius:50%;z-index:9}
+.fl{position:absolute;pointer-events:none;font-weight:800;font-size:2rem;z-index:30;animation:up 1.1s forwards}
+@keyframes up{to{transform:translateY(-90px);opacity:0}}
+#fb{position:fixed;bottom:16%;left:50%;transform:translateX(-50%) scale(0);z-index:25;background:#fff;border:4px solid var(--ink);border-radius:24px;padding:6px 22px;font-size:1.5rem;font-weight:800;transition:transform .25s;text-align:center;max-width:92vw;pointer-events:none}
+#fb.on{transform:translateX(-50%) scale(1)}
+#cur{position:fixed;width:46px;height:46px;margin:-23px 0 0 -23px;border:5px solid var(--ink);border-radius:50%;background:rgba(255,210,63,.55);z-index:40;pointer-events:none;display:none;transition:transform .1s}
+#cur.pinch{transform:scale(.6);background:var(--pink)}
+#cam{position:fixed;right:10px;bottom:10px;width:150px;border-radius:16px;border:4px solid #fff;transform:scaleX(-1);z-index:20;display:none;background:#000}
+#hint{position:fixed;left:10px;bottom:10px;z-index:20;background:rgba(255,255,255,.9);border-radius:16px;padding:4px 14px;font-weight:700;font-size:.95rem;display:none}
+#stars{font-size:3rem;letter-spacing:4px}
+@media (prefers-reduced-motion:reduce){.cloud{animation:none}}
+</style>
+</head>
+<body>
+<div class="cloud" style="width:170px;height:46px;top:14%;animation-duration:70s"></div>
+<div class="cloud" style="width:120px;height:34px;top:32%;animation-duration:95s;animation-delay:-40s"></div>
+<div class="cloud" style="width:200px;height:52px;top:58%;animation-duration:120s;animation-delay:-80s"></div>
+
+<div id="nav"><span>🎈 <b id="nm"></b></span><span class="chip">Level <b id="lv">1</b>/5</span><span class="sp"></span><span class="chip">⭐ <b id="sc">0</b></span><span class="chip">⏱ <b id="tt">20</b></span><button id="snd" aria-label="Suara">🔊</button><button id="cmb" aria-label="Kamera">📷</button></div>
+<div id="bar"><i></i></div>
+
+<section class="screen" id="start">
+  <h1>BALLOON POP</h1><h2>Pecahkan Balon Pintar 🎈</h2>
+  <div class="card">
+    <b>Matematika Kelas 1 · Pasangan Bilangan</b>
+    <input id="name" maxlength="20" placeholder="Tulis namamu…" autocomplete="off" aria-label="Nama siswa">
+    <button class="btn" id="go">Main!</button>
+    <small>Pecahkan balon dengan klik / sentuh, atau dengan gerakan tangan (pinch) lewat kamera.</small>
+  </div>
+</section>
+
+<section class="screen" id="camAsk" style="display:none">
+  <div class="card"><h2>Main pakai tangan? ✋</h2>
+    <p style="margin:8px 0">Kamera hanya menyala jika kamu setuju. Gambar kamera tidak disimpan atau dikirim ke mana pun.</p>
+    <button class="btn g" id="camYes">Aktifkan kamera</button>
+    <button class="btn" id="camNo" style="margin-top:10px;background:#8a88c8;box-shadow:0 6px 0 #5a58a0">Pakai mouse / sentuh</button>
+    <small>Gerakkan jari telunjuk untuk menunjuk. Rapatkan jempol + telunjuk (pinch) untuk memecahkan balon.</small></div>
+</section>
+
+<div id="game">
+  <div id="q"><span class="tag" id="tag"></span><p id="qt"></p><div id="tm"><i></i></div></div>
+  <div id="stage"></div>
+</div>
+<div id="fb"></div><div id="cur"></div><div id="hint"></div>
+<video id="cam" playsinline muted></video>
+
+<section class="screen" id="end" style="display:none">
+  <h1>HEBAT!</h1>
+  <div class="card"><div id="stars"></div><h2 id="endT"></h2><p id="endS" style="font-size:1.3rem;margin:8px 0"></p>
+  <button class="btn g" id="again">Main lagi 🔄</button></div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+/* ===== BANK SOAL: Matematika Kelas 1 – Pasangan Bilangan (5 level × 3 soal) ===== */
+const LV=[
+ {t:5,q:[
+  {k:'LOTS',p:'Pasangan bilangan 5: 2 dan … ?',o:['1','3','4','5'],a:'3',h:'2 + 3 = 5'},
+  {k:'MOTS',p:'🍎 Ada 5 apel. 4 apel ada di keranjang, sisanya di meja. Ada berapa apel di meja?',o:['0','1','2','3'],a:'1',h:'4 + 1 = 5'},
+  {k:'HOTS',p:'Mana yang BUKAN pasangan bilangan 5?',o:['1 dan 4','2 dan 3','3 dan 3','0 dan 5'],a:'3 dan 3',h:'3 + 3 = 6, bukan 5'}]},
+ {t:6,q:[
+  {k:'LOTS',p:'Pasangan bilangan 6: 4 dan … ?',o:['1','2','3','4'],a:'2',h:'4 + 2 = 6'},
+  {k:'MOTS',p:'🎈 Ada 6 balon. 1 balon merah, sisanya biru. Ada berapa balon biru?',o:['3','4','5','6'],a:'5',h:'1 + 5 = 6'},
+  {k:'HOTS',p:'Mana yang BUKAN pasangan bilangan 6?',o:['1 dan 5','2 dan 4','3 dan 4','0 dan 6'],a:'3 dan 4',h:'3 + 4 = 7, bukan 6'}]},
+ {t:7,q:[
+  {k:'LOTS',p:'Pasangan bilangan 7: 3 dan … ?',o:['3','4','5','6'],a:'4',h:'3 + 4 = 7'},
+  {k:'MOTS',p:'🍬 Ada 7 permen di 2 piring. Piring A ada 6 permen. Ada berapa permen di piring B?',o:['0','1','2','3'],a:'1',h:'6 + 1 = 7'},
+  {k:'HOTS',p:'Mana pasangan bilangan 7 yang kedua bilangannya sama?',o:['1 dan 6','2 dan 5','3 dan 4','Tidak ada'],a:'Tidak ada',h:'3 + 3 = 6 dan 4 + 4 = 8. Tidak ada yang hasilnya 7'}]},
+ {t:8,q:[
+  {k:'LOTS',p:'Pasangan bilangan 8: 5 dan … ?',o:['2','3','4','5'],a:'3',h:'5 + 3 = 8'},
+  {k:'MOTS',p:'🐟 Ada 8 ikan. 3 ikan di kolam kiri, sisanya di kolam kanan. Berapa ikan di kolam kanan?',o:['4','5','6','7'],a:'5',h:'3 + 5 = 8'},
+  {k:'HOTS',p:'Budi bilang, “8 = 4 dan 5”. Bagaimana menurutmu?',o:['Benar','Salah, harusnya 4 dan 4','Salah, harusnya 4 dan 3','Salah, harusnya 4 dan 6'],a:'Salah, harusnya 4 dan 4',h:'4 + 4 = 8'}]},
+ {t:10,q:[
+  {k:'LOTS',p:'Pasangan bilangan 10: 6 dan … ?',o:['3','4','5','6'],a:'4',h:'6 + 4 = 10'},
+  {k:'MOTS',p:'⭐ Ada 10 bintang. 7 bintang sudah dipetik. Berapa bintang yang tersisa?',o:['2','3','4','5'],a:'3',h:'7 + 3 = 10'},
+  {k:'HOTS',p:'Mana pasangan bilangan 10 yang kedua bilangannya sama?',o:['4 dan 6','5 dan 5','3 dan 7','2 dan 8'],a:'5 dan 5',h:'5 + 5 = 10'}]}
+];
+const COL=[['#ff8a8a','#ff3b5c','#b3173a'],['#ffe27a','#ffb400','#b37600'],['#8fe8a8','#2fc47a','#17794a'],['#9ad0ff','#2f8cff','#1757b3'],['#d6a8ff','#9b4dff','#5f22b3'],['#ffb27a','#ff7a1a','#b34a00']];
+const KC={LOTS:'#2fc47a',MOTS:'#ff9f1a',HOTS:'#e63e6d'},KT=20;
+let S={name:'',lv:0,qi:0,score:0,bal:[],t:KT,timer:0,lock:true,snd:true,cam:false,tries:0,right:0};
+/* ===== SUARA ===== */
+let AC;function tone(f,d,ty='sine',v=.15,dl=0){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,AC.currentTime+dl);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+dl+d);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+dl);o.stop(AC.currentTime+dl+d)}catch(e){}}
+const sPop=()=>{tone(700,.1,'square',.1);tone(1000,.12,'triangle',.15,.06);tone(1400,.18,'sine',.12,.12)};
+const sBad=()=>{tone(220,.25,'sawtooth',.1);tone(160,.3,'sawtooth',.1,.15)};
+const sWin=()=>[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.15,i*.12));
+$('snd').onclick=()=>{S.snd=!S.snd;$('snd').textContent=S.snd?'🔊':'🔇'};
+/* ===== ALUR GAME ===== */
+function show(id){['start','camAsk','end'].forEach(x=>$(x).style.display=x===id?'flex':'none')}
+$('go').onclick=()=>{const n=$('name').value.trim();if(!n){$('name').focus();$('name').placeholder='Ketik namamu dulu ya!';return}S.name=n;tone(600,.1);show('camAsk')};
+$('name').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
+$('camNo').onclick=()=>begin();
+$('camYes').onclick=async()=>{const ok=await startCam();begin(ok)};
+$('cmb').onclick=async()=>{if(S.cam)stopCam();else await startCam()};
+function begin(){show('');['nav','bar'].forEach(i=>$(i).style.display='flex');$('bar').style.display='block';$('game').style.display='block';$('nm').textContent=S.name;S.lv=0;S.qi=0;S.score=0;S.right=0;upd();loadQ()}
+function upd(){$('sc').textContent=S.score;$('lv').textContent=S.lv+1;$('bar').firstElementChild.style.width=(S.lv*3+S.qi)/15*100+'%'}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function loadQ(){
+ const q=LV[S.lv].q[S.qi];S.tries=0;S.lock=false;
+ $('tag').textContent=q.k+' · Soal '+(S.qi+1)+'/3';$('tag').style.background=KC[q.k];$('qt').textContent=q.p;
+ const st=$('stage');st.innerHTML='';S.bal=[];
+ const W=innerWidth,H=innerHeight,n=q.o.length,size=Math.max(86,Math.min(150,W/(n+.6),H*.2));
+ const cols=shuffle(COL),opts=shuffle(q.o),top=H*.34,range=H-top-size*1.6;
+ opts.forEach((o,i)=>{
+  const el=document.createElement('div');el.className='b';el.tabIndex=0;el.setAttribute('role','button');
+  const c=cols[i%cols.length];el.style.cssText=`--s:${size}px;--c1:${c[0]};--c2:${c[1]};--c3:${c[2]}`;
+  if(o.length>5)el.style.fontSize=size*.19+'px';
+  el.innerHTML='<span>'+o+'</span>';
+  const b={el,o,x:(i+.5)*(W/n)-size/2,y0:top+Math.random()*range,amp:18+Math.random()*30,sp:.0008+Math.random()*.001,ph:Math.random()*6,size,dead:false};
+  el.onclick=e=>{e.stopPropagation();choose(b)};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')choose(b)};
+  st.appendChild(el);S.bal.push(b)});
+ S.t=KT;$('tt').textContent=S.t;clearInterval(S.timer);
+ S.timer=setInterval(()=>{if(S.lock)return;S.t--;$('tt').textContent=S.t;$('tm').firstElementChild.style.width=S.t/KT*100+'%';if(S.t<=0)timeout()},1000);
+ $('tm').firstElementChild.style.width='100%';
+}
+function pos(b,t){return b.y0+Math.sin(t*b.sp+b.ph)*b.amp*1.6}
+function loop(t){S.bal.forEach(b=>{if(!b.dead){b.cy=pos(b,t);b.el.style.transform=`translate(${b.x+Math.sin(t*b.sp*.7+b.ph)*10}px,${b.cy}px)`;b.el.style.left=0;b.el.style.top=0}});requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+function say(msg,color){const f=$('fb');f.textContent=msg;f.style.background=color;f.classList.add('on');clearTimeout(f.t);f.t=setTimeout(()=>f.classList.remove('on'),1700)}
+function burst(b){
+ const r=b.el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=getComputedStyle(b.el).getPropertyValue('--c2');
+ for(let i=0;i<26;i++){const p=document.createElement('div');p.className='pt';const s=6+Math.random()*12;
+  p.style.cssText=`width:${s}px;height:${s}px;left:${cx}px;top:${cy}px;background:${i%3?c:'#fff'}`;document.body.appendChild(p);
+  const a=Math.random()*6.28,d=60+Math.random()*130;
+  p.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d+60}px) scale(0)`,opacity:0}],{duration:700+Math.random()*400,easing:'cubic-bezier(.2,.7,.4,1)'}).onfinish=()=>p.remove()}
+ const o=document.createElement('div');o.style.cssText=`position:fixed;left:${cx-r.width/2}px;top:${cy-r.height/2}px;width:${r.width}px;height:${r.height}px;border:6px solid #fff;border-radius:50%;z-index:9;pointer-events:none`;document.body.appendChild(o);
+ o.animate([{transform:'scale(.6)',opacity:1},{transform:'scale(2)',opacity:0}],{duration:450}).onfinish=()=>o.remove();
+}
+function float(txt,b,col){const r=b.el.getBoundingClientRect(),f=document.createElement('div');f.className='fl';f.textContent=txt;f.style.cssText=`left:${r.left+r.width/2-20}px;top:${r.top}px;color:${col};-webkit-text-stroke:1.5px #2b2a55`;document.body.appendChild(f);setTimeout(()=>f.remove(),1100)}
+function choose(b){
+ if(S.lock||b.dead)return;const q=LV[S.lv].q[S.qi];
+ if(b.o===q.a){
+  S.lock=true;b.dead=true;clearInterval(S.timer);sPop();burst(b);b.el.style.display='none';
+  const pts=Math.max(5,10-S.tries*3)+Math.floor(S.t/4);S.score+=pts;S.right++;upd();float('+'+pts,b,'#ffd23f');
+  say(['Hebat! 🎉','Pintar sekali! ⭐','Benar! 👏','Keren! 🌟'][Math.random()*4|0]+' '+q.h,'#c8ffd9');
+  setTimeout(next,2000);
+ }else{
+  S.tries++;sBad();b.dead=true;b.el.classList.add('bad');float('✖',b,'#ff3b5c');
+  const r=b.el.getBoundingClientRect();for(let i=0;i<8;i++){const p=document.createElement('div');p.className='pt';p.style.cssText=`width:8px;height:8px;left:${r.left+r.width/2}px;top:${r.top+r.height/2}px;background:#888`;document.body.appendChild(p);const a=Math.random()*6.28;p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${Math.cos(a)*50}px,${Math.sin(a)*50}px)`,opacity:0}],{duration:600}).onfinish=()=>p.remove()}
+  say('Belum tepat. Coba lagi ya! 💪','#ffe0e0');
+  if(S.bal.filter(x=>!x.dead).length<=1){/* sisa balon benar saja – tetap dapat dipecahkan */}
+ }
+}
+function timeout(){
+ S.lock=true;clearInterval(S.timer);sBad();const q=LV[S.lv].q[S.qi];
+ S.bal.forEach(b=>{if(b.o===q.a)b.el.style.outline='6px solid #fff'});
+ say('Waktu habis! Jawabannya: '+q.a+' ('+q.h+')','#fff3c4');setTimeout(next,2600);
+}
+function next(){
+ $('fb').classList.remove('on');S.qi++;
+ if(S.qi>=3){S.qi=0;S.lv++;if(S.lv>=5)return finish();levelUp();return}
+ upd();loadQ();
+}
+function levelUp(){S.lock=true;upd();$('stage').innerHTML='';say('Level '+S.lv+' selesai! Lanjut Level '+(S.lv+1)+' 🚀','#c8f0ff');sWin();setTimeout(()=>{$('fb').classList.remove('on');loadQ()},2000)}
+function finish(){
+ clearInterval(S.timer);stopCam();$('bar').firstElementChild.style.width='100%';sWin();
+ ['nav','bar','game'].forEach(i=>$(i).style.display='none');$('stage').innerHTML='';show('end');
+ const pct=S.right/15,st=pct>.85?3:pct>.55?2:1;
+ $('stars').textContent='⭐'.repeat(st)+'☆'.repeat(3-st);
+ $('endT').textContent='Selamat, '+S.name+'!';
+ $('endS').textContent='Skor: '+S.score+' · Benar: '+S.right+' dari 15 soal. '+(st==3?'Kamu juara pasangan bilangan! 🏆':st==2?'Bagus sekali, terus berlatih! 💪':'Ayo coba lagi, kamu pasti bisa! 🌈');
+ for(let i=0;i<60;i++)setTimeout(()=>{const p=document.createElement('div');p.className='pt';const c=COL[i%6][1];p.style.cssText=`width:10px;height:14px;left:${Math.random()*100}vw;top:-20px;background:${c};border-radius:2px;z-index:50`;document.body.appendChild(p);p.animate([{transform:'translateY(0) rotate(0)'},{transform:`translateY(${innerHeight+40}px) rotate(${Math.random()*720}deg)`}],{duration:2500+Math.random()*1500}).onfinish=()=>p.remove()},i*40);
+}
+$('again').onclick=()=>{$('end').style.display='none';show('camAsk')};
+/* ===== KONTROL TANGAN (MediaPipe Hands) ===== */
+let hands,stream,running=false,pinched=false,sm={x:0,y:0};
+async function startCam(){
+ if(S.cam)return true;
+ if(!window.Hands||!navigator.mediaDevices){hint('Kamera/MediaPipe tidak tersedia. Pakai mouse atau sentuh ya.');return false}
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'}});
+  const v=$('cam');v.srcObject=stream;await v.play();v.style.display='block';
+  hands=hands||new Hands({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/'+f});
+  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.6,minTrackingConfidence:.5});
+  hands.onResults(onHand);S.cam=true;running=true;hint('✋ Tunjuk dengan telunjuk · 🤏 pinch untuk memecahkan balon');
+  (async function pump(){if(!running)return;try{await hands.send({image:v})}catch(e){}requestAnimationFrame(pump)})();
+  return true;
+ }catch(e){hint('Izin kamera ditolak. Pakai mouse atau sentuh ya.');return false}
+}
+function stopCam(){running=false;S.cam=false;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('cam').style.display='none';$('cur').style.display='none';$('hint').style.display='none'}
+function hint(m){const h=$('hint');h.textContent=m;h.style.display='block';clearTimeout(h.t);h.t=setTimeout(()=>h.style.display='none',6000)}
+function onHand(r){
+ const cur=$('cur');
+ if(!r.multiHandLandmarks||!r.multiHandLandmarks.length){cur.style.display='none';pinched=false;return}
+ const l=r.multiHandLandmarks[0],tip=l[8],th=l[4];
+ const tx=(1-tip.x)*innerWidth,ty=tip.y*innerHeight;
+ sm.x+=(tx-sm.x)*.45;sm.y+=(ty-sm.y)*.45;
+ cur.style.display='block';cur.style.left=sm.x+'px';cur.style.top=sm.y+'px';
+ const palm=Math.hypot(l[0].x-l[9].x,l[0].y-l[9].y)||.2,d=Math.hypot(tip.x-th.x,tip.y-th.y)/palm;
+ const isP=pinched?d<.45:d<.3;
+ cur.classList.toggle('pinch',isP);
+ const hit=S.bal.find(b=>!b.dead&&Math.hypot(sm.x-(b.x+b.size/2),sm.y-(b.cy+b.size*.59))<b.size*.55);
+ S.bal.forEach(b=>b.el.classList.toggle('hover',b===hit));
+ if(isP&&!pinched&&hit)choose(hit);
+ pinched=isP;
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)S.lock=S.lock});
+})();
+</script>
+</body>
+</html>
